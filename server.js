@@ -16,14 +16,13 @@ var app = express();
 
 
 app.use(logger("dev"));
-// Parse request body as JSON
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
 app.use(express.static("public"));
 
 // Connecting to the Mongo DB-- will have to change this for chess scraper
-mongoose.connect("mongodb://localhost/unit18Populater", { useNewUrlParser: true });
+mongoose.connect("mongodb://localhost/chessScraper", { useNewUrlParser: true });
 
 // Routes
 
