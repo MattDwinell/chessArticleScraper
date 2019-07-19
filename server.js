@@ -1,32 +1,28 @@
+//adding dependencies
 var express = require("express");
 var logger = require("morgan");
 var mongoose = require("mongoose");
-
-// Our scraping tools
-// Axios is a promised-based http library, similar to jQuery's Ajax method
-// It works on the client and on the server
 var axios = require("axios");
 var cheerio = require("cheerio");
 
-// Require all models
+//pulling in our models
 var db = require("./models");
-
+//setting port equal to 3000, will probably have to change later for heroku integrate
 var PORT = 3000;
 
-// Initialize Express
 var app = express();
 
-// Configure middleware
+// if we were going to use handlebars/middleware, I'd put it here, but I hate handlebars.
 
-// Use morgan logger for logging requests
+
 app.use(logger("dev"));
 // Parse request body as JSON
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
-// Make public a static folder
+
 app.use(express.static("public"));
 
-// Connect to the Mongo DB
+// Connecting to the Mongo DB-- will have to change this for chess scraper
 mongoose.connect("mongodb://localhost/unit18Populater", { useNewUrlParser: true });
 
 // Routes
@@ -34,22 +30,20 @@ mongoose.connect("mongodb://localhost/unit18Populater", { useNewUrlParser: true 
 // A GET route for scraping the echoJS website
 app.get("/scrape", function(req, res) {
   // First, we grab the body of the html with axios
-  axios.get("http://www.echojs.com/").then(function(response) {
+  axios.get("https://www.chess.com/").then(function(response) {
     // Then, we load that into cheerio and save it to $ for a shorthand selector
     var $ = cheerio.load(response.data);
 
     // Now, we grab every h2 within an article tag, and do the following:
-    $("article h2").each(function(i, element) {
+    $("article").each(function(i, element) {
       // Save an empty result object
       var result = {};
 
       // Add the text and href of every link, and save them as properties of the result object
-      result.title = $(this)
-        .children("a")
-        .text();
-      result.link = $(this)
-        .children("a")
-        .attr("href");
+      result.title = $(element).find('a').attr("title");
+      result.link = $(element).find("a").attr("href");
+      result.summary = $(element).find("p").text();
+      console.log(result.summary);
 
       // Create a new Article using the `result` object built from scraping
       db.Article.create(result)
